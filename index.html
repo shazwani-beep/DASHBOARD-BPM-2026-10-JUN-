@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Dashboard Perpustakaan Akademik (LibMetrics)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50: '#f0f4f8',
+                            100: '#dbe3f0',
+                            200: '#bfdbfe',
+                            600: '#1e3a8a',
+                            700: '#1d4ed8',
+                            800: '#1e3a8a',
+                            900: '#0f172a',
+                            950: '#020617'
+                        },
+                        accent: {
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#ef4444',
+                            violet: '#8b5cf6',
+                            sky: '#0ea5e9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden flex flex-col md:flex-row text-slate-800">
+
+    <!-- SIDEBAR NAVIGASI -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-100 flex flex-col transform -translate-x-full transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 border-r border-slate-800">
+        <!-- Logo & Identiti Brand -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+            <div class="bg-blue-600 p-2 rounded-xl text-white shadow-md shadow-blue-500/20">
+                <i data-lucide="library" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight text-white tracking-wide">LibMetrics</h1>
+                <span class="text-xs text-slate-400">Analitis Rujukan 2026</span>
+            </div>
+        </div>
+
+        <!-- Menu Navigasi -->
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Utama</p>
+            
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-blue-600 text-white transition-all shadow-md shadow-blue-600/10">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Analisis Konsolidasi</span>
+            </a>
+            
+            <a href="#analytical-section" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                <span>Metrik & Pembahagian</span>
+            </a>
+
+            <a href="#table-section" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                <i data-lucide="table-properties" class="w-4 h-4"></i>
+                <span>Log Ringkasan Rujukan</span>
+            </a>
+
+            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Pecahan Kampus</p>
+            
+            <button onclick="filterByCampus('JELI')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-left">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Kampus Jeli</span>
+                </div>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md">1,278</span>
+            </button>
+
+            <button onclick="filterByCampus('BACHOK')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-left">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Kampus Bachok</span>
+                </div>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md">989</span>
+            </button>
+
+            <button onclick="filterByCampus('PDG_TEMBAK')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-left">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                    <span>Padang Tembak</span>
+                </div>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md">888</span>
+            </button>
+
+            <button onclick="filterByCampus('KOTA')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-left">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>Kampus Kota</span>
+                </div>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md">745</span>
+            </button>
+        </nav>
+
+        <!-- Informasi Pengguna Aktif -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-sm font-bold text-white shadow-inner">
+                    AD
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-200 truncate">Amirul Daniel</p>
+                    <p class="text-xs text-slate-500 truncate">Ketua Pustakawan</p>
+                </div>
+                <button class="text-slate-500 hover:text-slate-300 transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay untuk Sidebar di Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm hidden lg:hidden"></div>
+
+    <!-- KANDUNGAN UTAMA -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        
+        <!-- NAVBAR ATAS -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 shadow-sm">
+            <div class="flex items-center gap-4 flex-1">
+                <button id="btn-toggle-sidebar" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                
+                <div class="relative w-full max-w-md hidden sm:block">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </span>
+                    <input type="text" id="global-search" oninput="searchTable()" placeholder="Cari nama peminjam, isyu rujukan atau fakulti..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
+                </div>
+            </div>
+
+            <!-- Panel Kanan Navbar -->
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100 text-blue-700 text-xs font-semibold shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                    Konsolidasi 2026 Aktif
+                </div>
+
+                <div class="w-[1px] h-6 bg-slate-200"></div>
+
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Tarikh Integrasi</p>
+                    <p class="text-xs font-bold text-slate-700">10 Jun 2026</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- AREA UTAMA DASHBOARD -->
+        <main class="flex-1 p-4 sm:p-6 space-y-6 max-w-7xl mx-auto w-full">
+            
+            <!-- Bahagian Pengenalan Utama & Penapis Kampus Terus -->
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-navy-950 p-6 rounded-2xl text-white shadow-xl">
+                <div>
+                    <span class="bg-blue-600/30 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-wider">Dashboard Eksklusif</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-2">Analitis Rujukan & Pertanyaan 2026</h2>
+                    <p class="text-slate-300 text-xs sm:text-sm mt-1">Interaksi masa nyata merangkumi 4 cawangan utama universiti berdasarkan pangkalan data CSV.</p>
+                </div>
+                
+                <!-- Butang Pilihan Penapis Dinamik -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/60 self-start xl:self-auto">
+                    <button onclick="filterByCampus('ALL')" id="btn-ALL" class="campus-filter-btn px-4 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20">
+                        Semua Kampus
+                    </button>
+                    <button onclick="filterByCampus('JELI')" id="btn-JELI" class="campus-filter-btn px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white">
+                        Jeli
+                    </button>
+                    <button onclick="filterByCampus('BACHOK')" id="btn-BACHOK" class="campus-filter-btn px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white">
+                        Bachok
+                    </button>
+                    <button onclick="filterByCampus('PDG_TEMBAK')" id="btn-PDG_TEMBAK" class="campus-filter-btn px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white">
+                        Pdg. Tembak
+                    </button>
+                    <button onclick="filterByCampus('KOTA')" id="btn-KOTA" class="campus-filter-btn px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white">
+                        Kota
+                    </button>
+                </div>
+            </div>
+
+            <!-- KAD DATA UTAMA (DILENGKAPI DATA KONSOLIDASI CSV) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                
+                <!-- Kad 1: Total Engagement -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Jumlah Penglibatan</span>
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                            <i data-lucide="message-square" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 id="card-total" class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">3,900</h3>
+                        <p class="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Integrasi Data Konsisten
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kad 2: Kategori Terbesar -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kategori Pengguna Dominan</span>
+                        <div class="p-3 bg-violet-50 text-violet-600 rounded-xl">
+                            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 id="card-category" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate">Undergraduate</h3>
+                        <p id="card-category-sub" class="text-xs text-slate-500 font-medium mt-2">
+                            2,697 Rujukan (69.1%)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kad 3: Saluran Teratas -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Saluran Komunikasi Utama</span>
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                            <i data-lucide="phone-call" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 id="card-medium" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate">Walk-In</h3>
+                        <p id="card-medium-sub" class="text-xs text-slate-500 font-medium mt-2">
+                            2,626 Sesi Pertemuan
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kad 4: Isyu Terkerap -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Isyu Paling Kerap Dirujuk</span>
+                        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                            <i data-lucide="help-circle" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 id="card-issue" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate">MyAthens</h3>
+                        <p id="card-issue-sub" class="text-xs text-slate-500 font-medium mt-2">
+                            839 Kes Pertanyaan
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ANALITIS SEKSYEN GRAF & DIAGRAM -->
+            <div id="analytical-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Graf Garis: Aliran Rujukan (2/3 lebar) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-lg">Aliran Aktiviti Rujukan Bulanan (2026)</h4>
+                            <p class="text-xs text-slate-500">Pecahan kes yang didaftarkan sepanjang bulan-bulan kemasukan aktif.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                            <span class="text-xs font-bold text-slate-600" id="monthly-chart-legend">Semua Kampus</span>
+                        </div>
+                    </div>
+                    <div class="h-80 relative">
+                        <canvas id="canvasMonthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Graf Kategori / Kampus Distribution (1/3 lebar) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-lg">Komposisi Pengagihan Rujukan</h4>
+                        <p class="text-xs text-slate-500 mb-4" id="campus-chart-subtitle">Pengagihan mengikut cawangan kampus.</p>
+                    </div>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="canvasCampusChart"></canvas>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-[11px] text-slate-400">
+                        <span>Pecahan mengikut peratusan data mutlak.</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- METRIK TAMBAHAN & LEADERBOARD STAFF -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Graf Bar Isyu-isyu (2/3 Lebar) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col justify-between">
+                    <div class="mb-4">
+                        <h4 class="font-bold text-slate-900 text-lg">Statistik Kekerapan Isyu Utama</h4>
+                        <p class="text-xs text-slate-500">Membantu perancangan penyelesaian masalah sokongan teknikal perpustakaan.</p>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="canvasIssueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Kakitangan (Pustakawan) Sebenar -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-bold text-slate-900 text-lg">Prestasi Pustakawan</h4>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-bold">Top Contributors</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">Penglibatan tertinggi berdasarkan penjejakan rujukan helaian fail staf.</p>
+                        
+                        <div class="space-y-3.5">
+                            <!-- Pahmi (Kota) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-700 text-xs flex items-center justify-center">PM</div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-800">Pahmi (Kota)</p>
+                                        <p class="text-xs text-slate-400">Pakar Rujukan Turnitin</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">643 Kes</span>
+                            </div>
+
+                            <!-- Fatin (Bachok) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-700 text-xs flex items-center justify-center">FT</div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-800">Fatin (Bachok)</p>
+                                        <p class="text-xs text-slate-400">Pakar Rujukan MyAthens</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">547 Kes</span>
+                            </div>
+
+                            <!-- Siti (Pdg Tembak) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-700 text-xs flex items-center justify-center">ST</div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-800">Siti (Padang Tembak)</p>
+                                        <p class="text-xs text-slate-400">Rujukan Sirkulasi & Pinjaman</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">439 Kes</span>
+                            </div>
+
+                            <!-- Hafiza (Bachok) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-700 text-xs flex items-center justify-center">HF</div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-800">Hafiza (Bachok)</p>
+                                        <p class="text-xs text-slate-400">Khidmat Sokongan MyAthens</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">363 Kes</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                        <span class="text-[10px] text-slate-400 block text-center">Berasalkan data audit prestasi 2026</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- JADUAL TRANSAKSI TERPERINCI -->
+            <div id="table-section" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-lg">Log Kemasukan Rujukan Terperinci</h4>
+                        <p class="text-xs text-slate-500">Merekodkan maklumat pertanyaan, kategori ahli, saluran serta status terkini.</p>
+                    </div>
+                    
+                    <!-- Search Input for Table -->
+                    <div class="relative w-full sm:w-72">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i data-lucide="filter" class="w-4 h-4"></i>
+                        </span>
+                        <input type="text" id="table-search" oninput="searchTable()" placeholder="Tapis baris jadual..." class="w-full pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
+                                <th class="py-4 px-6">Nama Pengguna</th>
+                                <th class="py-4 px-6">Fakulti / Unit</th>
+                                <th class="py-4 px-6">Kategori</th>
+                                <th class="py-4 px-6">Isu Dibincangkan</th>
+                                <th class="py-4 px-6 text-center">Medium Hubungan</th>
+                                <th class="py-4 px-6">Status Rekod</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Rekod akan diisi menggunakan JavaScript berdasarkan data nyata -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination / Footer Info -->
+                <div class="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <span id="table-showing-info">Menunjukkan 8 daripada 8 rekod model</span>
+                    <div class="flex gap-1.5">
+                        <button class="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">Sebelumnya</button>
+                        <button class="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">Seterusnya</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- DATA INTEGRASI KESELURUHAN & STRUKTUR LOGIK -->
+    <script>
+        // Data Mutlak yang diekstrak daripada fail "Pertanyaan dan Rujukan 2026 - KESELURUHAN KAMPUS.csv"
+        const dbCampus = {
+            ALL: {
+                total: 3900,
+                undergrad: 2697,
+                postgrad: 502,
+                academic: 471,
+                nonAcademic: 138,
+                walkIn: 2626,
+                whatsapp: 600,
+                form: 362,
+                email: 144,
+                monthly: [1038, 271, 384, 1047, 1160, 0, 0, 0, 0, 0, 0, 0],
+                issues: {
+                    'MyAthens': 839,
+                    'Borrow/Return/Renew': 833,
+                    'Turnitin': 500,
+                    'Facilities': 306,
+                    'Service': 206
+                },
+                topIssue: 'MyAthens',
+                topIssueCount: 839,
+                topMedium: 'Walk-In',
+                topMediumCount: 2626
+            },
+            JELI: {
+                total: 1278,
+                undergrad: 1040,
+                postgrad: 43,
+                academic: 126,
+                nonAcademic: 69,
+                walkIn: 896,
+                whatsapp: 150,
+                form: 180,
+                email: 52,
+                monthly: [246, 92, 110, 380, 450, 0, 0, 0, 0, 0, 0, 0],
+                issues: {
+                    'MyAthens': 523,
+                    'Borrow/Return/Renew': 320,
+                    'Turnitin': 13,
+                    'Facilities': 180,
+                    'Service': 103
+                },
+                topIssue: 'MyAthens',
+                topIssueCount: 523,
+                topMedium: 'Walk-In',
+                topMediumCount: 896
+            },
+            BACHOK: {
+                total: 989,
+                undergrad: 663,
+                postgrad: 67,
+                academic: 210,
+                nonAcademic: 49,
+                walkIn: 569,
+                whatsapp: 220,
+                form: 110,
+                email: 90,
+                monthly: [368, 128, 150, 180, 163, 0, 0, 0, 0, 0, 0, 0],
+                issues: {
+                    'MyAthens': 243,
+                    'Borrow/Return/Renew': 210,
+                    'Turnitin': 88,
+                    'Facilities': 70,
+                    'Service': 70
+                },
+                topIssue: 'MyAthens',
+                topIssueCount: 243,
+                topMedium: 'Walk-In',
+                topMediumCount: 569
+            },
+            PDG_TEMBAK: {
+                total: 888,
+                undergrad: 871,
+                postgrad: 24,
+                academic: 15,
+                nonAcademic: 0,
+                walkIn: 897,
+                whatsapp: 50,
+                form: 28,
+                email: 10,
+                monthly: [199, 16, 124, 250, 299, 0, 0, 0, 0, 0, 0, 0],
+                issues: {
+                    'MyAthens': 38,
+                    'Borrow/Return/Renew': 220,
+                    'Turnitin': 0,
+                    'Facilities': 50,
+                    'Service': 9
+                },
+                topIssue: 'Borrow/Return/Renew',
+                topIssueCount: 220,
+                topMedium: 'Walk-In',
+                topMediumCount: 897
+            },
+            KOTA: {
+                total: 745,
+                undergrad: 123,
+                postgrad: 368,
+                academic: 196,
+                nonAcademic: 58,
+                walkIn: 264,
+                whatsapp: 180,
+                form: 44,
+                email: 15,
+                monthly: [225, 101, 120, 150, 149, 0, 0, 0, 0, 0, 0, 0],
+                issues: {
+                    'MyAthens': 35,
+                    'Borrow/Return/Renew': 83,
+                    'Turnitin': 399,
+                    'Facilities': 6,
+                    'Service': 24
+                },
+                topIssue: 'Turnitin',
+                topIssueCount: 399,
+                topMedium: 'Walk-In',
+                topMediumCount: 264
+            }
+        };
+
+        // Data rekod jadual model (diambil daripada rekod-rekod sahih di helaian staf)
+        const sampleRecords = [
+            { name: 'Mohamad Asyraf', faculty: 'FIAT', category: 'Undergraduate', issue: 'Service', medium: 'Walk-In', status: 'Selesai' },
+            { name: 'Siti Nurliyana Atikah', faculty: 'FSB', category: 'Undergraduate', issue: 'Operation Hour', medium: 'Walk-In', status: 'Selesai' },
+            { name: 'Norazan bin Mat Nor', faculty: 'FBI', category: 'Postgraduate', issue: 'Turnitin Semakan', medium: 'WhatsApp', status: 'Selesai' },
+            { name: 'Dr Fatimah FIAT', faculty: 'FIAT', category: 'Academic', issue: 'Tempahan Ruang', medium: 'WhatsApp', status: 'Selesai' },
+            { name: 'Nur Anis Farhana', faculty: 'FBKT', category: 'Postgraduate', issue: 'Facilities', medium: 'Walk-In', status: 'Selesai' },
+            { name: 'Tuan Nur Alia', faculty: 'FSE', category: 'Undergraduate', issue: 'Facilities', medium: 'Walk-In', status: 'Selesai' },
+            { name: 'Auni Fatnin Agus Rizal', faculty: 'FHPK', category: 'Postgraduate', issue: 'Turnitin Article', medium: 'WhatsApp', status: 'Selesai' },
+            { name: 'SITI NURHASANAH BT IRZON', faculty: 'FKP', category: 'Undergraduate', issue: 'MyAthens Access', medium: 'Google Form', status: 'Selesai' }
+        ];
+
+        // Inisialisasi awal ikon Lucide
+        lucide.createIcons();
+
+        // Elemen-elemen DOM
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        }
+
+        btnToggleSidebar.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Global Chart instances
+        let monthlyChartInstance = null;
+        let campusChartInstance = null;
+        let issueChartInstance = null;
+
+        // Fungsi Penapis Utama Kampus
+        let activeCampus = 'ALL';
+
+        function filterByCampus(campusId) {
+            activeCampus = campusId;
+
+            // Kemas kini visual butang aktif
+            document.querySelectorAll('.campus-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-600/20');
+                btn.classList.add('text-slate-300', 'hover:text-white');
+            });
+            const activeBtn = document.getElementById(`btn-${campusId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-300', 'hover:text-white');
+                activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-600/20');
+            }
+
+            // Dapatkan set data kampus terpilih
+            const data = dbCampus[campusId];
+
+            // 1. Kemas kini Widget Kad
+            document.getElementById('card-total').textContent = Number(data.total).toLocaleString('en-US');
+            
+            // Peratusan Kategori Dominan
+            const undergradPct = ((data.undergrad / data.total) * 100).toFixed(1);
+            document.getElementById('card-category').textContent = 'Undergraduate';
+            document.getElementById('card-category-sub').textContent = `${Number(data.undergrad).toLocaleString('en-US')} Rujukan (${undergradPct}%)`;
+
+            // Saluran Teratas
+            const mediumPct = ((data.walkIn / data.total) * 100).toFixed(1);
+            document.getElementById('card-medium').textContent = data.topMedium;
+            document.getElementById('card-medium-sub').textContent = `${Number(data.topMediumCount).toLocaleString('en-US')} Sesi Pertemuan (${mediumPct}%)`;
+
+            // Isyu Teratas
+            document.getElementById('card-issue').textContent = data.topIssue;
+            document.getElementById('card-issue-sub').textContent = `${data.topIssueCount} Kes Pertanyaan`;
+
+            // 2. Kemas kini Carta Trend Bulanan
+            document.getElementById('monthly-chart-legend').textContent = campusId === 'ALL' ? 'Semua Kampus' : `Kampus ${campusId}`;
+            updateMonthlyChart(data.monthly);
+
+            // 3. Kemas kini Carta Pengagihan (Doughnut)
+            // Jika ALL, tunjukkan pengagihan mengikut kampus. Jika Kampus tunggal, tunjukkan pengagihan mengikut jenis pengguna.
+            updateCampusOrUserChart(campusId, data);
+
+            // 4. Kemas kini Carta Isyu
+            updateIssueChart(data.issues);
+        }
+
+        // ==========================================
+        // PENYEDIAAN DAN PENGEMASKINIAN CARTA (CHART.JS)
+        // ==========================================
+
+        function updateMonthlyChart(monthlyData) {
+            if (monthlyChartInstance) {
+                monthlyChartInstance.data.datasets[0].data = monthlyData;
+                monthlyChartInstance.update();
+                return;
+            }
+
+            const ctx = document.getElementById('canvasMonthlyChart').getContext('2d');
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'],
+                    datasets: [{
+                        label: 'Jumlah Kes Pertanyaan',
+                        data: monthlyData,
+                        borderColor: '#1e3a8a',
+                        backgroundColor: 'rgba(30, 58, 138, 0.04)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#1d4ed8',
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(226, 232, 240, 0.6)' },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCampusOrUserChart(campusId, campusDataObj) {
+            const subtitleEl = document.getElementById('campus-chart-subtitle');
+            
+            let chartLabels = [];
+            let chartData = [];
+            let chartColors = [];
+
+            if (campusId === 'ALL') {
+                subtitleEl.textContent = 'Pecahan rujukan mengikut cawangan kampus.';
+                chartLabels = ['Jeli', 'Bachok', 'Padang Tembak', 'Kota'];
+                chartData = [1278, 989, 888, 745];
+                chartColors = ['#1e3a8a', '#10b981', '#8b5cf6', '#f59e0b'];
+            } else {
+                subtitleEl.textContent = `Pecahan pengguna di Kampus ${campusId}.`;
+                chartLabels = ['Undergrad', 'Postgrad', 'Academic', 'Non-Academic'];
+                chartData = [campusDataObj.undergrad, campusDataObj.postgrad, campusDataObj.academic, campusDataObj.nonAcademic];
+                chartColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
+            }
+
+            if (campusChartInstance) {
+                campusChartInstance.data.labels = chartLabels;
+                campusChartInstance.data.datasets[0].data = chartData;
+                campusChartInstance.data.datasets[0].backgroundColor = chartColors;
+                campusChartInstance.update();
+                return;
+            }
+
+            const ctx = document.getElementById('canvasCampusChart').getContext('2d');
+            campusChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                padding: 12,
+                                color: '#475569',
+                                font: { size: 10, weight: '600' }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function updateIssueChart(issuesObj) {
+            const sortedLabels = Object.keys(issuesObj);
+            const sortedData = Object.values(issuesObj);
+
+            if (issueChartInstance) {
+                issueChartInstance.data.labels = sortedLabels;
+                issueChartInstance.data.datasets[0].data = sortedData;
+                issueChartInstance.update();
+                return;
+            }
+
+            const ctx = document.getElementById('canvasIssueChart').getContext('2d');
+            issueChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedLabels,
+                    datasets: [{
+                        label: 'Kekuatan Kes Rujukan',
+                        data: sortedData,
+                        backgroundColor: [
+                            'rgba(30, 58, 138, 0.85)',
+                            'rgba(139, 92, 246, 0.85)',
+                            'rgba(16, 185, 129, 0.85)',
+                            'rgba(245, 158, 11, 0.85)',
+                            'rgba(239, 68, 68, 0.85)'
+                        ],
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(226, 232, 240, 0.4)' },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#475569', font: { size: 11, weight: '500' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // LOGIK PENAPISAN DAN JADUAL
+        // ==========================================
+
+        function renderTable(records) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+
+            if (records.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 font-normal">
+                            Tiada rekod rujukan ditemui sepadan dengan carian.
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('table-showing-info').textContent = "Menunjukkan 0 rekod";
+                return;
+            }
+
+            records.forEach(rec => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+
+                let categoryBadgeColor = "bg-slate-100 text-slate-700";
+                if (rec.category === 'Undergraduate') categoryBadgeColor = "bg-blue-50 text-blue-700";
+                else if (rec.category === 'Postgraduate') categoryBadgeColor = "bg-violet-50 text-violet-700";
+                else if (rec.category === 'Academic') categoryBadgeColor = "bg-emerald-50 text-emerald-700";
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-6 font-semibold text-slate-950 flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[10px] text-slate-600">
+                            ${rec.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <span>${rec.name}</span>
+                    </td>
+                    <td class="py-3.5 px-6 text-slate-500 font-semibold">${rec.faculty}</td>
+                    <td class="py-3.5 px-6">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${categoryBadgeColor}">${rec.category}</span>
+                    </td>
+                    <td class="py-3.5 px-6 font-semibold text-slate-800">${rec.issue}</td>
+                    <td class="py-3.5 px-6 text-center">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600">
+                            ${rec.medium}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-6">
+                        <span class="inline-flex items-center gap-1 text-emerald-700 font-bold text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            ${rec.status}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            document.getElementById('table-showing-info').textContent = `Menunjukkan ${records.length} daripada ${sampleRecords.length} rekod model`;
+        }
+
+        function searchTable() {
+            const query = document.getElementById('table-search').value.toLowerCase();
+            const globalQuery = document.getElementById('global-search').value.toLowerCase();
+            
+            const activeQuery = query || globalQuery;
+
+            const filtered = sampleRecords.filter(rec => {
+                return rec.name.toLowerCase().includes(activeQuery) ||
+                       rec.faculty.toLowerCase().includes(activeQuery) ||
+                       rec.issue.toLowerCase().includes(activeQuery) ||
+                       rec.category.toLowerCase().includes(activeQuery);
+            });
+
+            renderTable(filtered);
+        }
+
+        // Aturan Onload Utama
+        window.onload = function() {
+            filterByCampus('ALL');
+            renderTable(sampleRecords);
+        };
+    </script>
+</body>
+</html>
